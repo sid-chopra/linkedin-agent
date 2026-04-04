@@ -70,7 +70,8 @@ app.post('/send-draft', async (req, res) => {
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
-      }
+      },
+      family: 4
     })
 
     // 2. Define the email content
@@ -118,7 +119,8 @@ cron.schedule('* 9 * * 2', async () => {
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
-      }
+      },
+      family: 4
     })
 
     const mailOptions = {
