@@ -3,6 +3,7 @@
  * 2) rag with web search
  * 3) get response from mail and edit the response and redraft
  * 4) auto post to linkedin
+ * 5) security
  */
 
 
@@ -64,7 +65,6 @@ app.post('/generate-post', async (req, res) => {
 app.post('/send-draft', async (req, res) => {
   const { post, topic } = req.body
   console.log('Received draft request for topic:', topic)
-  console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
 
   try {
     console.log('Attempting to send email via Resend...')
@@ -84,7 +84,7 @@ app.post('/send-draft', async (req, res) => {
 })
 
 // Runs every Monday at 9:00 AM
-cron.schedule('0 9 * * 2', async () => {
+cron.schedule('30 1 * * 0', async () => {
   console.log('⏰ Scheduler triggered! Generating weekly LinkedIn post...')
 
   // TO this (random topic)
