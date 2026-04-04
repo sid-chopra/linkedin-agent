@@ -10,12 +10,15 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const axios = require('axios')
-const nodemailer = require('nodemailer')
+// const nodemailer = require('nodemailer')
 const cron = require('node-cron')
 
 
 // 2. Load our secret keys from .env file
 dotenv.config()
+
+const { Resend } = require('resend')
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // 3. Create the server app
 const app = express()
@@ -64,30 +67,38 @@ app.post('/send-draft', async (req, res) => {
   console.log('Received draft request for topic:', topic)
 
   try {
-    // 1. Create a mail transporter using your Gmail credentials
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      },
-      family: 4
-    })
+    // // 1. Create a mail transporter using your Gmail credentials
+    // const transporter = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   port: 587,
+    //   secure: false,
+    //   auth: {
+    //     user: process.env.GMAIL_USER,
+    //     pass: process.env.GMAIL_APP_PASSWORD
+    //   },
+    //   family: 4
+    // })
 
-    // 2. Define the email content
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: process.env.GMAIL_USER, // sending to yourself
+    // // 2. Define the email content
+    // const mailOptions = {
+    //   from: process.env.GMAIL_USER,
+    //   to: process.env.GMAIL_USER, // sending to yourself
+    //   subject: `📝 LinkedIn Draft Ready — ${topic}`,
+    //   text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
+    // }
+
+    // // 3. Send the email
+    // await transporter.sendMail(mailOptions)
+    // console.log('Draft email sent successfully!')
+    // res.json({ success: true, message: 'Draft sent to your email!' })
+
+    // Use RESEND instead of nodemailer
+    await resend.emails.send({
+      from: 'LinkedIn Agent <onboarding@resend.dev>',
+      to: process.env.GMAIL_USER,
       subject: `📝 LinkedIn Draft Ready — ${topic}`,
       text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
-    }
-
-    // 3. Send the email
-    await transporter.sendMail(mailOptions)
-    console.log('Draft email sent successfully!')
-    res.json({ success: true, message: 'Draft sent to your email!' })
+    })
 
   } catch (error) {
     console.error('Error sending email:', error.message)
@@ -96,7 +107,7 @@ app.post('/send-draft', async (req, res) => {
 })
 
 // Runs every Monday at 9:00 AM
-cron.schedule('* 9 * * 2', async () => {
+cron.schedule('0 9 * * 2', async () => {
   console.log('⏰ Scheduler triggered! Generating weekly LinkedIn post...')
 
   // TO this (random topic)
@@ -115,27 +126,35 @@ cron.schedule('* 9 * * 2', async () => {
     const post = await generatePost(topic, hint)
     console.log('✅ Post generated successfully!')
 
-    // Step 2 - Send it to your email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      },
-      family: 4
-    })
+    // // Step 2 - Send it to your email
+    // const transporter = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   port: 587,
+    //   secure: false,
+    //   auth: {
+    //     user: process.env.GMAIL_USER,
+    //     pass: process.env.GMAIL_APP_PASSWORD
+    //   },
+    //   family: 4
+    // })
 
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
+    // const mailOptions = {
+    //   from: process.env.GMAIL_USER,
+    //   to: process.env.GMAIL_USER,
+    //   subject: `📝 LinkedIn Draft Ready — ${topic}`,
+    //   text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
+    // }
+
+    // await transporter.sendMail(mailOptions)
+    // console.log('📧 Weekly draft emailed successfully!')
+
+
+    await resend.emails.send({
+      from: 'LinkedIn Agent <onboarding@resend.dev>',
       to: process.env.GMAIL_USER,
       subject: `📝 LinkedIn Draft Ready — ${topic}`,
       text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
-    }
-
-    await transporter.sendMail(mailOptions)
-    console.log('📧 Weekly draft emailed successfully!')
+    })
 
   } catch (error) {
     console.error('❌ Scheduler error:', error.message)
