@@ -186,10 +186,4 @@ cron.schedule('0 10 * * 2', ...) // Tuesday at 10AM
 
 **Sidhant**
 Technical Lead — Frontend & AI Tooling
-[LinkedIn](https://linkedin.com/in/yourprofile)
-
----
-
-## 📄 License
-
-MIT — feel free to fork and build on top of this!
+[LinkedIn](https://www.linkedin.com/in/sidhant-chopra-4a9451bb)
