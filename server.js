@@ -62,43 +62,20 @@ app.post('/generate-post', async (req, res) => {
 })
 
 app.post('/send-draft', async (req, res) => {
-
   const { post, topic } = req.body
   console.log('Received draft request for topic:', topic)
+  console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
 
   try {
-    // // 1. Create a mail transporter using your Gmail credentials
-    // const transporter = nodemailer.createTransport({
-    //   service: 'gmail',
-    //   port: 587,
-    //   secure: false,
-    //   auth: {
-    //     user: process.env.GMAIL_USER,
-    //     pass: process.env.GMAIL_APP_PASSWORD
-    //   },
-    //   family: 4
-    // })
-
-    // // 2. Define the email content
-    // const mailOptions = {
-    //   from: process.env.GMAIL_USER,
-    //   to: process.env.GMAIL_USER, // sending to yourself
-    //   subject: `📝 LinkedIn Draft Ready — ${topic}`,
-    //   text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
-    // }
-
-    // // 3. Send the email
-    // await transporter.sendMail(mailOptions)
-    // console.log('Draft email sent successfully!')
-    // res.json({ success: true, message: 'Draft sent to your email!' })
-
-    // Use RESEND instead of nodemailer
-    await resend.emails.send({
+    console.log('Attempting to send email via Resend...')
+    const result = await resend.emails.send({
       from: 'LinkedIn Agent <onboarding@resend.dev>',
       to: process.env.GMAIL_USER,
       subject: `📝 LinkedIn Draft Ready — ${topic}`,
       text: `Hey Sidhant! Here's your weekly LinkedIn post draft:\n\n${post}\n\n---\nHappy with it? Go ahead and post it on LinkedIn! ✅`
     })
+    console.log('Resend result:', JSON.stringify(result))
+    res.json({ success: true, message: 'Draft sent to your email!' })
 
   } catch (error) {
     console.error('Error sending email:', error.message)
