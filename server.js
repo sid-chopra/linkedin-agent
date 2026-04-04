@@ -67,6 +67,8 @@ app.post('/send-draft', async (req, res) => {
     // 1. Create a mail transporter using your Gmail credentials
     const transporter = nodemailer.createTransport({
       service: 'gmail',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
@@ -116,6 +118,8 @@ cron.schedule('* 9 * * 2', async () => {
     // Step 2 - Send it to your email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD
