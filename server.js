@@ -25,8 +25,33 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const app = express()
 app.use(express.json()) // This lets our server understand JSON data
 
-// Reusable function to generate a LinkedIn post
-async function generatePost(topic, hint) {
+// Fetch latest news for a given topic
+async function fetchNews(topic) {
+  const response = await axios.get('https://gnews.io/api/v4/search', {
+    params: {
+      q: topic,
+      lang: 'en',
+      max: 5,
+      apikey: process.env.GNEWS_API_KEY
+    }
+  })
+
+  const articles = response.data.articles
+  if (!articles || articles.length === 0) return ''
+
+  // Extract just the title and description of each article
+  const newsSummary = articles
+    .map((a, i) => `${i + 1}. ${a.title} — ${a.description}`)
+    .join('\n')
+
+  return newsSummary
+}
+
+async function generatePost(topic, hint, newsContext) {
+  const newsSection = newsContext
+    ? `\n\nHere are some recent news headlines about this topic for context:\n${newsContext}\n\nUse these to make the post feel current and relevant.`
+    : ''
+
   const response = await axios.post(
     'https://api.groq.com/openai/v1/chat/completions',
     {
@@ -34,7 +59,8 @@ async function generatePost(topic, hint) {
       messages: [
         {
           role: 'user',
-          content: `Write a witty, casual LinkedIn post about "${topic}". ${hint ? 'Angle: ' + hint : ''} Keep it under 250 words.`
+          content: `Write a witty, casual LinkedIn post about "${topic}". ${hint ? 'Angle: ' + hint : ''}${newsSection} Keep it under 250 words. 
+          It should be catchy and punchy. It should help me get get maximum views in linkedin.`
         }
       ]
     },
@@ -100,7 +126,12 @@ cron.schedule('30 1 * * 0', async () => {
 
   try {
     // Step 1 - Generate the post
-    const post = await generatePost(topic, hint)
+    // Step 1 - Fetch latest news for the topic
+    const newsContext = await fetchNews(topic)
+    console.log(`📰 Fetched news for topic: ${topic}`)
+
+    // Step 2 - Generate the post with news context
+    const post = await generatePost(topic, hint, newsContext)
     console.log('✅ Post generated successfully!')
 
     // // Step 2 - Send it to your email
