@@ -13,17 +13,19 @@ const dotenv = require('dotenv')
 const axios = require('axios')
 // const nodemailer = require('nodemailer')
 const cron = require('node-cron')
+const cors = require('cors');
 
 
 // 2. Load our secret keys from .env file
-dotenv.config()
+dotenv.config();
 
-const { Resend } = require('resend')
-const resend = new Resend(process.env.RESEND_API_KEY)
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 3. Create the server app
 const app = express()
 app.use(express.json()) // This lets our server understand JSON data
+app.use(cors());
 
 // Fetch latest news for a given topic
 async function fetchNews(topic) {
