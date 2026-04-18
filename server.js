@@ -27,7 +27,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000", // for local development
-      "https://your-vercel-app.vercel.app", // your production frontend
+      "https://linkedin-agent-ui-alpha.vercel.app", // your production frontend
     ],
   }),
 );
